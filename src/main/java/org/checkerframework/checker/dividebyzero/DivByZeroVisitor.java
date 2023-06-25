@@ -16,33 +16,44 @@ public class DivByZeroVisitor extends BaseTypeVisitor<DivByZeroAnnotatedTypeFact
 
     /** Set of operators we care about */
     private static final Set<Tree.Kind> DIVISION_OPERATORS = EnumSet.of(
-        /* x /  y */ Tree.Kind.DIVIDE,
-        /* x /= y */ Tree.Kind.DIVIDE_ASSIGNMENT,
-        /* x %  y */ Tree.Kind.REMAINDER,
-        /* x %= y */ Tree.Kind.REMAINDER_ASSIGNMENT);
+            /* x / y */ Tree.Kind.DIVIDE,
+            /* x /= y */ Tree.Kind.DIVIDE_ASSIGNMENT,
+            /* x % y */ Tree.Kind.REMAINDER,
+            /* x %= y */ Tree.Kind.REMAINDER_ASSIGNMENT);
 
     /**
      * Determine whether to report an error at the given binary AST node.
      * The error text is defined in the messages.properties file.
+     * 
      * @param node the AST node to inspect
      * @return true if an error should be reported, false otherwise
      */
     private boolean errorAt(BinaryTree node) {
         // A BinaryTree can represent any binary operator, including + or -.
         // TODO
+        if (DIVISION_OPERATORS.contains(node.getKind())) {
+            if (hasAnnotation(node.getRightOperand(), Zero.class)) {
+                System.out.println("hasAnnotation(node.getRightOperand(), Zero.class)");
+                System.out.println(node);
+                return true;
+            }
+        }
         return false;
     }
 
     /**
      * Determine whether to report an error at the given compound assignment
      * AST node. The error text is defined in the messages.properties file.
+     * 
      * @param node the AST node to inspect
      * @return true if an error should be reported, false otherwise
      */
     private boolean errorAt(CompoundAssignmentTree node) {
-        // A CompoundAssignmentTree represents any binary operator combined with an assignment,
+        // A CompoundAssignmentTree represents any binary operator combined with an
+        // assignment,
         // such as "x += 10".
         // TODO
+        System.out.println(node.getVariable());
         return false;
     }
 
@@ -50,8 +61,8 @@ public class DivByZeroVisitor extends BaseTypeVisitor<DivByZeroAnnotatedTypeFact
     // Useful helpers
 
     private static final Set<TypeKind> INT_TYPES = EnumSet.of(
-        TypeKind.INT,
-        TypeKind.LONG);
+            TypeKind.INT,
+            TypeKind.LONG);
 
     private boolean isInt(Tree node) {
         return INT_TYPES.contains(atypeFactory.getAnnotatedType(node).getKind());
