@@ -90,34 +90,71 @@ public class DivByZeroTransfer extends CFTransfer {
             Comparison operator,
             AnnotationMirror lhs,
             AnnotationMirror rhs) {
-        AnnotationMirror zeroMirror = reflect(Zero.class);
-        AnnotationMirror nonZeroMirror = reflect(NonZero.class);
+        AnnotationMirror zero = reflect(Zero.class);
+        AnnotationMirror nonZero = reflect(NonZero.class);
         switch (operator) {
             case EQ:
                 if (equal(lhs, top())) {
-                    if (equal(rhs, zeroMirror)) {
-                        // top == zero returns zero
-                        return zeroMirror;
-                    } else if (equal(rhs, nonZeroMirror)) {
-                        // top == nonzero returns nonzero
-                        return nonZeroMirror;
+                    if (equal(rhs, zero)) {
+                        return zero;
+                    } else if (equal(rhs, nonZero)) {
+                        return nonZero;
+                    }
+                } else if (equal(rhs, top())) {
+                    if (equal(lhs, zero)) {
+                        return zero;
+                    } else if (equal(lhs, nonZero)) {
+                        return nonZero;
                     }
                 }
-                break;
             case NE:
                 if (equal(lhs, top())) {
-                    if (equal(rhs, zeroMirror)) {
-                        // top != zero returns nonzero
-                        return nonZeroMirror;
-                    } else if (equal(rhs, nonZeroMirror)) {
-                        // top != nonzero returns zero
-                        return zeroMirror;
+                    if (equal(rhs, zero)) {
+                        return nonZero;
+                    } else if (equal(rhs, nonZero)) {
+                        return zero;
+                    }
+                } else if (equal(rhs, top())) {
+                    if (equal(lhs, zero)) {
+                        return nonZero;
+                    } else if (equal(lhs, nonZero)) {
+                        return zero;
                     }
                 }
-                break;
-
+            case LT:
+                if (equal(lhs, top())) {
+                    if (equal(rhs, zero)) {
+                        return nonZero;
+                    } else if (equal(rhs, nonZero)) {
+                        return top();
+                    }
+                } else if (equal(rhs, top())) {
+                    if (equal(lhs, zero)) {
+                        return nonZero;
+                    } else if (equal(lhs, nonZero)) {
+                        return top();
+                    }
+                }
+            case LE:
+                return glb(lhs, rhs);
+            case GT:
+                if (equal(lhs, top())) {
+                    if (equal(rhs, zero)) {
+                        return nonZero;
+                    } else if (equal(rhs, nonZero)) {
+                        return top();
+                    }
+                } else if (equal(rhs, top())) {
+                    if (equal(lhs, zero)) {
+                        return nonZero;
+                    } else if (equal(lhs, nonZero)) {
+                        return top();
+                    }
+                }
+            case GE:
+                return glb(lhs, rhs);
         }
-        return lhs;
+        return top();
     }
 
     /**
@@ -160,7 +197,6 @@ public class DivByZeroTransfer extends CFTransfer {
                         return top();
                     }
                 }
-                break;
             case TIMES:
                 if (equal(lhs, zero)) {
                     return zero;
@@ -171,7 +207,6 @@ public class DivByZeroTransfer extends CFTransfer {
                         return nonZero;
                     }
                 }
-                break;
             case MINUS:
                 if (equal(lhs, zero)) {
                     if (equal(rhs, zero)) {
@@ -186,7 +221,6 @@ public class DivByZeroTransfer extends CFTransfer {
                         return top();
                     }
                 }
-                break;
             case DIVIDE:
                 if (equal(lhs, zero)) {
                     if (equal(rhs, zero)) {
@@ -201,7 +235,6 @@ public class DivByZeroTransfer extends CFTransfer {
                         return nonZero;
                     }
                 }
-                break;
             case MOD:
                 if (equal(lhs, zero)) {
                     if (equal(rhs, zero)) {
@@ -216,8 +249,6 @@ public class DivByZeroTransfer extends CFTransfer {
                         return top();
                     }
                 }
-                break;
-
         }
         return top();
     }
