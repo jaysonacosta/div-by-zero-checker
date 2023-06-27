@@ -107,6 +107,7 @@ public class DivByZeroTransfer extends CFTransfer {
                         return nonZero;
                     }
                 }
+                break;
             case NE:
                 if (equal(lhs, top())) {
                     if (equal(rhs, zero)) {
@@ -121,6 +122,7 @@ public class DivByZeroTransfer extends CFTransfer {
                         return zero;
                     }
                 }
+                break;
             case LT:
                 if (equal(lhs, top())) {
                     if (equal(rhs, zero)) {
@@ -135,6 +137,7 @@ public class DivByZeroTransfer extends CFTransfer {
                         return top();
                     }
                 }
+                break;
             case LE:
                 return glb(lhs, rhs);
             case GT:
@@ -151,6 +154,7 @@ public class DivByZeroTransfer extends CFTransfer {
                         return top();
                     }
                 }
+                break;
             case GE:
                 return glb(lhs, rhs);
         }
@@ -197,6 +201,7 @@ public class DivByZeroTransfer extends CFTransfer {
                         return top();
                     }
                 }
+                break;
             case TIMES:
                 if (equal(lhs, zero)) {
                     return zero;
@@ -207,6 +212,7 @@ public class DivByZeroTransfer extends CFTransfer {
                         return nonZero;
                     }
                 }
+                break;
             case MINUS:
                 if (equal(lhs, zero)) {
                     if (equal(rhs, zero)) {
@@ -221,6 +227,7 @@ public class DivByZeroTransfer extends CFTransfer {
                         return top();
                     }
                 }
+                break;
             case DIVIDE:
                 if (equal(lhs, zero)) {
                     if (equal(rhs, zero)) {
@@ -235,6 +242,7 @@ public class DivByZeroTransfer extends CFTransfer {
                         return nonZero;
                     }
                 }
+                break;
             case MOD:
                 if (equal(lhs, zero)) {
                     if (equal(rhs, zero)) {
@@ -249,6 +257,7 @@ public class DivByZeroTransfer extends CFTransfer {
                         return top();
                     }
                 }
+                break;
         }
         return top();
     }
