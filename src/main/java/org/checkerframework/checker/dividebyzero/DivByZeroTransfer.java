@@ -100,12 +100,10 @@ public class DivByZeroTransfer extends CFTransfer {
                     } else if (equal(rhs, nonZero)) {
                         return nonZero;
                     }
-                } else if (equal(rhs, top())) {
-                    if (equal(lhs, zero)) {
-                        return zero;
-                    } else if (equal(lhs, nonZero)) {
-                        return nonZero;
-                    }
+                } else if (equal(rhs, zero)) {
+                    return lub(lhs, zero);
+                } else if (equal(rhs, nonZero)) {
+                    return glb(lhs, nonZero);
                 }
                 break;
             case NE:
@@ -113,12 +111,6 @@ public class DivByZeroTransfer extends CFTransfer {
                     if (equal(rhs, zero)) {
                         return nonZero;
                     } else if (equal(rhs, nonZero)) {
-                        return zero;
-                    }
-                } else if (equal(rhs, top())) {
-                    if (equal(lhs, zero)) {
-                        return nonZero;
-                    } else if (equal(lhs, nonZero)) {
                         return zero;
                     }
                 }
@@ -130,16 +122,14 @@ public class DivByZeroTransfer extends CFTransfer {
                     } else if (equal(rhs, nonZero)) {
                         return top();
                     }
-                } else if (equal(rhs, top())) {
-                    if (equal(lhs, zero)) {
-                        return nonZero;
-                    } else if (equal(lhs, nonZero)) {
-                        return top();
-                    }
+                } else if (equal(rhs, zero)) {
+                    return glb(lhs, nonZero);
+                } else if (equal(rhs, nonZero)) {
+                    return glb(lhs, top());
                 }
                 break;
             case LE:
-                return glb(lhs, rhs);
+                return top();
             case GT:
                 if (equal(lhs, top())) {
                     if (equal(rhs, zero)) {
@@ -147,17 +137,16 @@ public class DivByZeroTransfer extends CFTransfer {
                     } else if (equal(rhs, nonZero)) {
                         return top();
                     }
-                } else if (equal(rhs, top())) {
-                    if (equal(lhs, zero)) {
-                        return nonZero;
-                    } else if (equal(lhs, nonZero)) {
-                        return top();
-                    }
+                } else if (equal(rhs, zero)) {
+                    return glb(lhs, nonZero);
+                } else if (equal(rhs, nonZero)) {
+                    return glb(lhs, top());
                 }
                 break;
             case GE:
-                return glb(lhs, rhs);
+                return top();
         }
+
         return top();
     }
 
@@ -236,7 +225,7 @@ public class DivByZeroTransfer extends CFTransfer {
                         return zero;
                     }
                 } else if (equal(lhs, nonZero)) {
-                    if (equal(rhs, zero)) {
+                    if (equal(rhs, zero) || equal(rhs, top())) {
                         return bottom();
                     } else if (equal(rhs, nonZero)) {
                         return nonZero;

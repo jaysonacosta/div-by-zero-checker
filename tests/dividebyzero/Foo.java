@@ -90,21 +90,99 @@ class Foo {
 
     public static void j() {
         int a = 0;
-        a += 1; 
+        a += 1;
         int b = 1 / a;
 
         int c = 1;
         c -= 1;
         // :: error: divide.by.zero
         int d = 1 / c;
-        
+
         int f = 1;
         // :: error: divide.by.zero
         f /= 0;
-        
+
         int h = 1;
         h *= 0;
         // :: error: divide.by.zero
         int j = 1 / h;
+    }
+
+    public static void k() {
+        int a = 1;
+
+        // These should not fail because we know that a = 1
+        if (a >= 0) {
+            int a1 = 1 / a;
+        } else {
+            int a1 = 1 / a;
+        }
+
+        // These should not fail because we know that a = 1
+        if (a <= 0) {
+            int a1 = 1 / a;
+        } else {
+            int a1 = 1 / a;
+        }
+
+        // These should not fail because we know that a = 1
+        if (a > 0) {
+            int a1 = 1 / a;
+        } else {
+            int a1 = 1 / a;
+        }
+
+        // These should not fail because we know that a = 1
+        if (a < 0) {
+            int a1 = 1 / a;
+        } else {
+            int a1 = 1 / a;
+        }
+
+        int b = 0;
+
+        // These should fail because we know that b = 0
+        if (b >= 0) {
+            // :: error: divide.by.zero
+            int b1 = 1 / b;
+        } else {
+            int b1 = 1 / b;
+        }
+
+        // These should fail because we know that b = 0
+        if (b <= 0) {
+            // :: error: divide.by.zero
+            int b1 = 1 / b;
+        } else {
+            int b1 = 1 / b;
+        }
+
+        // These should fail because we know that b = 0
+        if (b > 0) {
+            int b1 = 1 / b;
+        } else {
+            // :: error: divide.by.zero
+            int b1 = 1 / b;
+        }
+
+        // These should fail because we know that b = 0
+        if (b < 0) {
+            int b1 = 1 / b;
+        } else {
+            // :: error: divide.by.zero
+            int b1 = 1 / b;
+        }
+    }
+
+    public static void g_strict_divide_largeconstants(int y) {
+        if (y > (100 * 100)) {
+            // Can't catch this because analysis doesn't have lattice points for positive
+            // and negative values
+            int a = 1 / y;
+            int c = 1 / a;
+        } else {
+            // :: error: divide.by.zero
+            int b = 10 / y;
+        }
     }
 }
