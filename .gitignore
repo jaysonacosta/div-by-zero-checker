@@ -1,6 +1,7 @@
 # Generated files
 .gradle
 build
+bin
 
 # IntelliJ
 .idea
@@ -11,3 +12,6 @@ build
 
 # checker-qual
 dividebyzero-checker-qual/src
+
+# java version manager
+.java-version

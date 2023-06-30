@@ -24,20 +24,31 @@ import org.checkerframework.checker.dividebyzero.qual.*;
 public class DivByZeroTransfer extends CFTransfer {
 
     enum Comparison {
-        /** == */ EQ,
-        /** != */ NE,
-        /** <  */ LT,
-        /** <= */ LE,
-        /** >  */ GT,
-        /** >= */ GE
+        /** == */
+        EQ,
+        /** != */
+        NE,
+        /** < */
+        LT,
+        /** <= */
+        LE,
+        /** > */
+        GT,
+        /** >= */
+        GE
     }
 
     enum BinaryOperator {
-        /** + */ PLUS,
-        /** - */ MINUS,
-        /** * */ TIMES,
-        /** / */ DIVIDE,
-        /** % */ MOD
+        /** + */
+        PLUS,
+        /** - */
+        MINUS,
+        /** * */
+        TIMES,
+        /** / */
+        DIVIDE,
+        /** % */
+        MOD
     }
 
     // ========================================================================
@@ -49,30 +60,94 @@ public class DivByZeroTransfer extends CFTransfer {
      * input value "lhs" is always a legal return value, but not a very useful
      * one.)
      *
-     * <p>For example, given the code
+     * <p>
+     * For example, given the code
+     * 
      * <pre>
-     * if (y != 0) { x = 1 / y; }
+     * if (y != 0) {
+     *     x = 1 / y;
+     * }
      * </pre>
+     * 
      * the comparison "y != 0" causes us to learn the fact that "y is not zero"
      * inside the body of the if-statement. This function would be called with
      * "NE", "top", and "zero", and should return "not zero" (or the appropriate
      * result for your lattice).
      *
-     * <p>Note that the returned value should always be lower in the lattice
+     * <p>
+     * Note that the returned value should always be lower in the lattice
      * than the given point for lhs. The "glb" helper function below will
      * probably be useful here.
      *
-     * @param operator   a comparison operator
-     * @param lhs        the lattice point for the left-hand side of the comparison expression
-     * @param rhs        the lattice point for the right-hand side of the comparison expression
+     * @param operator a comparison operator
+     * @param lhs      the lattice point for the left-hand side of the comparison
+     *                 expression
+     * @param rhs      the lattice point for the right-hand side of the comparison
+     *                 expression
      * @return a refined type for lhs
      */
     private AnnotationMirror refineLhsOfComparison(
             Comparison operator,
             AnnotationMirror lhs,
             AnnotationMirror rhs) {
-        // TODO
-        return lhs;
+        AnnotationMirror zero = reflect(Zero.class);
+        AnnotationMirror nonZero = reflect(NonZero.class);
+        switch (operator) {
+            case EQ:
+                if (equal(lhs, top())) {
+                    if (equal(rhs, zero)) {
+                        return zero;
+                    } else if (equal(rhs, nonZero)) {
+                        return nonZero;
+                    }
+                } else if (equal(rhs, zero)) {
+                    return lub(lhs, zero);
+                } else if (equal(rhs, nonZero)) {
+                    return glb(lhs, nonZero);
+                }
+                break;
+            case NE:
+                if (equal(lhs, top())) {
+                    if (equal(rhs, zero)) {
+                        return nonZero;
+                    } else if (equal(rhs, nonZero)) {
+                        return zero;
+                    }
+                }
+                break;
+            case LT:
+                if (equal(lhs, top())) {
+                    if (equal(rhs, zero)) {
+                        return nonZero;
+                    } else if (equal(rhs, nonZero)) {
+                        return top();
+                    }
+                } else if (equal(rhs, zero)) {
+                    return glb(lhs, nonZero);
+                } else if (equal(rhs, nonZero)) {
+                    return glb(lhs, top());
+                }
+                break;
+            case LE:
+                return top();
+            case GT:
+                if (equal(lhs, top())) {
+                    if (equal(rhs, zero)) {
+                        return nonZero;
+                    } else if (equal(rhs, nonZero)) {
+                        return top();
+                    }
+                } else if (equal(rhs, zero)) {
+                    return glb(lhs, nonZero);
+                } else if (equal(rhs, nonZero)) {
+                    return glb(lhs, top());
+                }
+                break;
+            case GE:
+                return top();
+        }
+
+        return top();
     }
 
     /**
@@ -80,20 +155,99 @@ public class DivByZeroTransfer extends CFTransfer {
      * lattice for the result of evaluating the expression. ("Top" is always a
      * legal return value, but not a very useful one.)
      *
-     * <p>For example,
-     * <pre>x = 1 + 0</pre>
+     * <p>
+     * For example,
+     * 
+     * <pre>
+     * x = 1 + 0
+     * </pre>
+     * 
      * should cause us to conclude that "x is not zero".
      *
-     * @param operator   a binary operator
-     * @param lhs        the lattice point for the left-hand side of the expression
-     * @param rhs        the lattice point for the right-hand side of the expression
+     * @param operator a binary operator
+     * @param lhs      the lattice point for the left-hand side of the expression
+     * @param rhs      the lattice point for the right-hand side of the expression
      * @return the lattice point for the result of the expression
      */
     private AnnotationMirror arithmeticTransfer(
             BinaryOperator operator,
             AnnotationMirror lhs,
             AnnotationMirror rhs) {
-        // TODO
+        AnnotationMirror zero = reflect(Zero.class);
+        AnnotationMirror nonZero = reflect(NonZero.class);
+        switch (operator) {
+            case PLUS:
+                if (equal(lhs, zero)) {
+                    if (equal(rhs, zero)) {
+                        return zero;
+                    } else if (equal(rhs, nonZero)) {
+                        return nonZero;
+                    }
+                } else if (equal(lhs, nonZero)) {
+                    if (equal(rhs, zero)) {
+                        return nonZero;
+                    } else if (equal(rhs, nonZero)) {
+                        return top();
+                    }
+                }
+                break;
+            case TIMES:
+                if (equal(lhs, zero)) {
+                    return zero;
+                } else if (equal(lhs, nonZero)) {
+                    if (equal(rhs, zero)) {
+                        return zero;
+                    } else if (equal(rhs, nonZero)) {
+                        return nonZero;
+                    }
+                }
+                break;
+            case MINUS:
+                if (equal(lhs, zero)) {
+                    if (equal(rhs, zero)) {
+                        return zero;
+                    } else if (equal(rhs, nonZero)) {
+                        return nonZero;
+                    }
+                } else if (equal(lhs, nonZero)) {
+                    if (equal(rhs, zero)) {
+                        return nonZero;
+                    } else if (equal(rhs, nonZero)) {
+                        return top();
+                    }
+                }
+                break;
+            case DIVIDE:
+                if (equal(lhs, zero)) {
+                    if (equal(rhs, zero)) {
+                        return bottom();
+                    } else if (equal(rhs, nonZero)) {
+                        return zero;
+                    }
+                } else if (equal(lhs, nonZero)) {
+                    if (equal(rhs, zero)) {
+                        return bottom();
+                    } else if (equal(rhs, nonZero)) {
+                        return top();
+                    }
+                }
+                break;
+            case MOD:
+                if (equal(lhs, zero)) {
+                    if (equal(rhs, zero)) {
+                        return bottom();
+                    } else if (equal(rhs, nonZero)) {
+                        return zero;
+                    }
+                } else if (equal(lhs, nonZero)) {
+                    if (equal(rhs, zero)) {
+                        return bottom();
+                    } else if (equal(rhs, nonZero)) {
+                        return top();
+                    }
+                }
+                break;
+        }
         return top();
     }
 
@@ -123,8 +277,8 @@ public class DivByZeroTransfer extends CFTransfer {
     /** Convert a "Class" object (e.g. "Top.class") to a point in the lattice */
     private AnnotationMirror reflect(Class<? extends Annotation> qualifier) {
         return AnnotationBuilder.fromClass(
-            analysis.getTypeFactory().getProcessingEnv().getElementUtils(),
-            qualifier);
+                analysis.getTypeFactory().getProcessingEnv().getElementUtils(),
+                qualifier);
     }
 
     /** Determine whether two AnnotationMirrors are the same point in the lattice */
@@ -135,26 +289,40 @@ public class DivByZeroTransfer extends CFTransfer {
     /** `x op y` == `y flip(op) x` */
     private Comparison flip(Comparison op) {
         switch (op) {
-            case EQ: return Comparison.EQ;
-            case NE: return Comparison.NE;
-            case LT: return Comparison.GT;
-            case LE: return Comparison.GE;
-            case GT: return Comparison.LT;
-            case GE: return Comparison.LE;
-            default: throw new IllegalArgumentException(op.toString());
+            case EQ:
+                return Comparison.EQ;
+            case NE:
+                return Comparison.NE;
+            case LT:
+                return Comparison.GT;
+            case LE:
+                return Comparison.GE;
+            case GT:
+                return Comparison.LT;
+            case GE:
+                return Comparison.LE;
+            default:
+                throw new IllegalArgumentException(op.toString());
         }
     }
 
     /** `x op y` == `!(x negate(op) y)` */
     private Comparison negate(Comparison op) {
         switch (op) {
-            case EQ: return Comparison.NE;
-            case NE: return Comparison.EQ;
-            case LT: return Comparison.GE;
-            case LE: return Comparison.GT;
-            case GT: return Comparison.LE;
-            case GE: return Comparison.LT;
-            default: throw new IllegalArgumentException(op.toString());
+            case EQ:
+                return Comparison.NE;
+            case NE:
+                return Comparison.EQ;
+            case LT:
+                return Comparison.GE;
+            case LE:
+                return Comparison.GT;
+            case GT:
+                return Comparison.LE;
+            case GE:
+                return Comparison.LT;
+            default:
+                throw new IllegalArgumentException(op.toString());
         }
     }
 
@@ -165,7 +333,8 @@ public class DivByZeroTransfer extends CFTransfer {
         super(analysis);
     }
 
-    private TransferResult<CFValue, CFStore> implementComparison(Comparison op, BinaryOperationNode n, TransferResult<CFValue, CFStore> out) {
+    private TransferResult<CFValue, CFStore> implementComparison(Comparison op, BinaryOperationNode n,
+            TransferResult<CFValue, CFStore> out) {
         QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
         AnnotationMirror l = findAnnotation(analysis.getValue(n.getLeftOperand()).getAnnotations(), hierarchy);
         AnnotationMirror r = findAnnotation(analysis.getValue(n.getRightOperand()).getAnnotations(), hierarchy);
@@ -180,24 +349,25 @@ public class DivByZeroTransfer extends CFTransfer {
 
         thenStore.insertValue(
                 JavaExpression.fromNode(n.getLeftOperand()),
-            refineLhsOfComparison(op, l, r));
+                refineLhsOfComparison(op, l, r));
 
         thenStore.insertValue(
-            JavaExpression.fromNode(n.getRightOperand()),
-            refineLhsOfComparison(flip(op), r, l));
+                JavaExpression.fromNode(n.getRightOperand()),
+                refineLhsOfComparison(flip(op), r, l));
 
         elseStore.insertValue(
-            JavaExpression.fromNode(n.getLeftOperand()),
-            refineLhsOfComparison(negate(op), l, r));
+                JavaExpression.fromNode(n.getLeftOperand()),
+                refineLhsOfComparison(negate(op), l, r));
 
         elseStore.insertValue(
-            JavaExpression.fromNode(n.getRightOperand()),
-            refineLhsOfComparison(flip(negate(op)), r, l));
+                JavaExpression.fromNode(n.getRightOperand()),
+                refineLhsOfComparison(flip(negate(op)), r, l));
 
         return new ConditionalTransferResult<>(out.getResultValue(), thenStore, elseStore);
     }
 
-    private TransferResult<CFValue, CFStore> implementOperator(BinaryOperator op, BinaryOperationNode n, TransferResult<CFValue, CFStore> out) {
+    private TransferResult<CFValue, CFStore> implementOperator(BinaryOperator op, BinaryOperationNode n,
+            TransferResult<CFValue, CFStore> out) {
         QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
         AnnotationMirror l = findAnnotation(analysis.getValue(n.getLeftOperand()).getAnnotations(), hierarchy);
         AnnotationMirror r = findAnnotation(analysis.getValue(n.getRightOperand()).getAnnotations(), hierarchy);
@@ -228,7 +398,8 @@ public class DivByZeroTransfer extends CFTransfer {
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(GreaterThanOrEqualNode n, TransferInput<CFValue, CFStore> p) {
+    public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(GreaterThanOrEqualNode n,
+            TransferInput<CFValue, CFStore> p) {
         return implementComparison(Comparison.GE, n, super.visitGreaterThanOrEqual(n, p));
     }
 
@@ -238,42 +409,50 @@ public class DivByZeroTransfer extends CFTransfer {
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitLessThanOrEqual(LessThanOrEqualNode n, TransferInput<CFValue, CFStore> p) {
+    public TransferResult<CFValue, CFStore> visitLessThanOrEqual(LessThanOrEqualNode n,
+            TransferInput<CFValue, CFStore> p) {
         return implementComparison(Comparison.LE, n, super.visitLessThanOrEqual(n, p));
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitIntegerDivision(IntegerDivisionNode n, TransferInput<CFValue, CFStore> p) {
+    public TransferResult<CFValue, CFStore> visitIntegerDivision(IntegerDivisionNode n,
+            TransferInput<CFValue, CFStore> p) {
         return implementOperator(BinaryOperator.DIVIDE, n, super.visitIntegerDivision(n, p));
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitIntegerRemainder(IntegerRemainderNode n, TransferInput<CFValue, CFStore> p) {
+    public TransferResult<CFValue, CFStore> visitIntegerRemainder(IntegerRemainderNode n,
+            TransferInput<CFValue, CFStore> p) {
         return implementOperator(BinaryOperator.MOD, n, super.visitIntegerRemainder(n, p));
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitFloatingDivision(FloatingDivisionNode n, TransferInput<CFValue, CFStore> p) {
+    public TransferResult<CFValue, CFStore> visitFloatingDivision(FloatingDivisionNode n,
+            TransferInput<CFValue, CFStore> p) {
         return implementOperator(BinaryOperator.DIVIDE, n, super.visitFloatingDivision(n, p));
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitFloatingRemainder(FloatingRemainderNode n, TransferInput<CFValue, CFStore> p) {
+    public TransferResult<CFValue, CFStore> visitFloatingRemainder(FloatingRemainderNode n,
+            TransferInput<CFValue, CFStore> p) {
         return implementOperator(BinaryOperator.MOD, n, super.visitFloatingRemainder(n, p));
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitNumericalMultiplication(NumericalMultiplicationNode n, TransferInput<CFValue, CFStore> p) {
+    public TransferResult<CFValue, CFStore> visitNumericalMultiplication(NumericalMultiplicationNode n,
+            TransferInput<CFValue, CFStore> p) {
         return implementOperator(BinaryOperator.TIMES, n, super.visitNumericalMultiplication(n, p));
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitNumericalAddition(NumericalAdditionNode n, TransferInput<CFValue, CFStore> p) {
+    public TransferResult<CFValue, CFStore> visitNumericalAddition(NumericalAdditionNode n,
+            TransferInput<CFValue, CFStore> p) {
         return implementOperator(BinaryOperator.PLUS, n, super.visitNumericalAddition(n, p));
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitNumericalSubtraction(NumericalSubtractionNode n, TransferInput<CFValue, CFStore> p) {
+    public TransferResult<CFValue, CFStore> visitNumericalSubtraction(NumericalSubtractionNode n,
+            TransferInput<CFValue, CFStore> p) {
         return implementOperator(BinaryOperator.MINUS, n, super.visitNumericalSubtraction(n, p));
     }
 
