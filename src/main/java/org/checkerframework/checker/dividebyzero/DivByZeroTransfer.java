@@ -225,10 +225,10 @@ public class DivByZeroTransfer extends CFTransfer {
                         return zero;
                     }
                 } else if (equal(lhs, nonZero)) {
-                    if (equal(rhs, zero) || equal(rhs, top())) {
+                    if (equal(rhs, zero)) {
                         return bottom();
                     } else if (equal(rhs, nonZero)) {
-                        return nonZero;
+                        return top();
                     }
                 }
                 break;

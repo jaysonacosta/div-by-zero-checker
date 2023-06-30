@@ -179,6 +179,7 @@ class Foo {
             // Can't catch this because analysis doesn't have lattice points for positive
             // and negative values
             int a = 1 / y;
+            // :: error: divide.by.zero
             int c = 1 / a;
         } else {
             // :: error: divide.by.zero
